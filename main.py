@@ -52,7 +52,7 @@ class MainHandler(webapp2.RequestHandler):
         feedbacks = Feedback.query().order(-Feedback.date)
         user = users.get_current_user()
 
-        q = Account.query(Account.user_id == user.user_id())
+        q = Account.query(Account.user == user)
         account = q.get()
 
         if not account:
@@ -87,8 +87,8 @@ class FeedbackHandler(webapp2.RequestHandler):
         subscribers = Account.query(Account.subscribed == True).fetch()
         emails = []
         for subscriber in subscribers:
-            if user.email() != subscriber.email:
-                emails.append(subscriber.email)
+            if user.email() != subscriber.user.email():
+                emails.append(subscriber.user.email())
 
         if emails:
             mail.send_mail(user.email(), emails, 'New feedback',
@@ -109,8 +109,8 @@ class FeedbackHandler(webapp2.RequestHandler):
         subscribers = Account.query(Account.subscribed == True).fetch()
         emails = []
         for subscriber in subscribers:
-            if user.email() != subscriber.email:
-                emails.append(subscriber.email)
+            if user.email() != subscriber.user.email():
+                emails.append(subscriber.user.email())
 
         if emails:
             mail.send_mail(user.email(), emails, 'Edit in feedback',
@@ -121,7 +121,7 @@ class SubscribeHandler(webapp2.RequestHandler):
     def put(self):
         user = users.get_current_user()
 
-        q = Account.query(Account.user.user_id() == user.user_id())
+        q = Account.query(Account.user == user)
         account = q.get()
         account.subscribed = not account.subscribed
         account.put()
@@ -129,11 +129,14 @@ class SubscribeHandler(webapp2.RequestHandler):
 
 class LogSenderHandler(InboundMailHandler):
     def receive(self, mail_message):
-        if Account.query(Account.email == mail_message.sender,
-                         Account.subscribed == True):
-            feedback = Feedback(author=mail_message.sender,
-                            content=get_clean_body(mail_message),
-                            archived=False)
+        clean_email = main_message.sender[mail_message.sender.find('<')+1:
+                                          mail_message.sender.find('>')]
+        user = Account.query(Account.user.email() == clean_email,
+                             Account.subscribed == True).get()
+        if user:
+            feedback = Feedback(author=user,
+                                content=get_clean_body(mail_message),
+                                archived=False)
             feedback_key = feedback.put();
 
 

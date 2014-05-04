@@ -49,6 +49,7 @@ $(function() {
     $('#add').click(function() {
         var text = $('#new-feedback').val();
         add_to_datastore(text);
+        $('#new-feedback').val('');
     });
 
     $('.edit').click(edit_fn);
@@ -56,7 +57,7 @@ $(function() {
 
     function add_to_datastore(text) {
         $.post("/feedback", {content: text}, function(data) {
-            $(data).appendTo('#content');
+            $(data).prependTo('#feedbacks');
             $('.edit').click(edit_fn);
             $('.delete').click(delete_fn);
         });

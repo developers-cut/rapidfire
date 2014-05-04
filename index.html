@@ -50,9 +50,11 @@
                         </div>
                     </div>
                     <h2 class="">Previous feedback</h2>
-                    {% for feedback in feedbacks %}
-                        {% include 'feedback.html' %}
-                    {% endfor %}
+                    <div id="feedbacks">
+                        {% for feedback in feedbacks %}
+                            {% include 'feedback.html' %}
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>
