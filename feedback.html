@@ -1,0 +1,14 @@
+<div class="feedback">
+    <input type="hidden" name="key" value={{feedback.key.urlsafe()}}>
+    <div class="row">
+        <div class="col-md-10">
+            <p class="feedback-content">{{feedback.content}}</p>
+            <p>Posted by {{feedback.author.nickname()}}</p>
+        </div>
+        <div class="col-md-2">
+            <button class="edit btn btn-default">Edit</button>
+            <button class="delete btn btn-default btn-danger">Delete</button>
+        </div>
+    </div>
+</div>
+
