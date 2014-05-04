@@ -40,6 +40,7 @@ class Account(ndb.Model):
     subscribed = ndb.BooleanProperty()
     user = ndb.UserProperty()
 
+
 class Feedback(ndb.Model):
     author = ndb.UserProperty()
     content = ndb.StringProperty(indexed=False)
@@ -65,7 +66,7 @@ class MainHandler(webapp2.RequestHandler):
             'user': user
         }
 
-        template = JINJA_ENVIRONMENT.get_template('index.html')
+        template = JINJA_ENVIRONMENT.get_template('templates/index.html')
         self.response.write(template.render(template_values))
 
 
@@ -77,7 +78,7 @@ class FeedbackHandler(webapp2.RequestHandler):
             'feedback': feedback
         }
 
-        template = JINJA_ENVIRONMENT.get_template('feedback.html')
+        template = JINJA_ENVIRONMENT.get_template('templates/feedback.html')
         self.response.write(template.render(template_values))
 
     def delete(self):
