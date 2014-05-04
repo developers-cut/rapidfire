@@ -71,28 +71,14 @@ class MainHandler(webapp2.RequestHandler):
 
 class FeedbackHandler(webapp2.RequestHandler):
     def post(self):
-        feedback = Feedback(author=users.get_current_user(),
-                            content=self.request.get('content'),
-                            archived=False)
-        feedback_key = feedback.put();
-
+        user = users.get_current_user()
+        feedback = new_feedback(user, self.request.get('content'))
         template_values = {
             'feedback': feedback
         }
 
         template = JINJA_ENVIRONMENT.get_template('feedback.html')
         self.response.write(template.render(template_values))
-
-        user = users.get_current_user()
-        subscribers = Account.query(Account.subscribed == True).fetch()
-        emails = []
-        for subscriber in subscribers:
-            if user.email() != subscriber.user.email():
-                emails.append(subscriber.user.email())
-
-        if emails:
-            mail.send_mail(user.email(), emails, 'New feedback',
-                           feedback.content)
 
     def delete(self):
         feedback_key = ndb.Key(urlsafe=self.request.get('key'))
@@ -106,15 +92,7 @@ class FeedbackHandler(webapp2.RequestHandler):
         feedback.put();
 
         user = users.get_current_user()
-        subscribers = Account.query(Account.subscribed == True).fetch()
-        emails = []
-        for subscriber in subscribers:
-            if user.email() != subscriber.user.email():
-                emails.append(subscriber.user.email())
-
-        if emails:
-            mail.send_mail(user.email(), emails, 'Edit in feedback',
-                           feedback.content)
+        email_subscribers(user.email(), 'Edit in feedback', feedback.content)
 
 
 class SubscribeHandler(webapp2.RequestHandler):
@@ -134,12 +112,28 @@ class LogSenderHandler(InboundMailHandler):
         account = Account.query(Account.user == users.User(email=clean_email),
                                 Account.subscribed == True).get()
         if account:
-            feedback = Feedback(author=account.user,
-                                content=get_clean_body(mail_message),
-                                archived=False)
-            feedback_key = feedback.put();
+            new_feedback(account.user, get_clean_body(mail_message))
 
 
+def email_subscribers(from_email, subject, content):
+    subscribers = Account.query(Account.subscribed == True).fetch()
+    emails = []
+    for subscriber in subscribers:
+        if from_email != subscriber.user.email():
+            emails.append(subscriber.user.email())
+
+    if emails:
+        mail.send_mail(from_email, emails, subject, content)
+
+
+def new_feedback(user, content):
+    feedback = Feedback(author=user, content=content, archived=False)
+    feedback.put();
+    email_subscribers(user.email(), 'New feedback', feedback.content)
+    return feedback
+
+
+# From:
 # https://github.com/dustingetz/foodlog/blob/master/logfood/handle_incoming_email.py
 def get_clean_body(email):
     bodies = email.bodies(content_type='text/plain')
