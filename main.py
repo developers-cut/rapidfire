@@ -129,12 +129,12 @@ class SubscribeHandler(webapp2.RequestHandler):
 
 class LogSenderHandler(InboundMailHandler):
     def receive(self, mail_message):
-        clean_email = main_message.sender[mail_message.sender.find('<')+1:
+        clean_email = mail_message.sender[mail_message.sender.find('<')+1:
                                           mail_message.sender.find('>')]
-        user = Account.query(Account.user.email() == clean_email,
-                             Account.subscribed == True).get()
-        if user:
-            feedback = Feedback(author=user,
+        account = Account.query(Account.user == users.User(email=clean_email),
+                                Account.subscribed == True).get()
+        if account:
+            feedback = Feedback(author=account.user,
                                 content=get_clean_body(mail_message),
                                 archived=False)
             feedback_key = feedback.put();
