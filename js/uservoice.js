@@ -18,7 +18,10 @@ UserVoice = window.UserVoice||[];
 UserVoice.push(['set', {
     accent_color: '#e23a39',
     trigger_color: 'white',
-    trigger_background_color: '#e23a39'
+    trigger_background_color: '#e23a39',
+    ticket_custom_fields: {
+        'Product': 'Rapid Fire',
+    }
 }]);
 
 // Identify the user and pass traits
@@ -43,9 +46,3 @@ UserVoice.push(['identify', {
 UserVoice.push(['addTrigger', {mode: 'contact',
                                trigger_position: 'bottom-right'}]);
 
-// Or, use your own custom trigger:
-//UserVoice.push(['addTrigger', '#id', { mode: 'contact' }]);
-
-// Autoprompt for Satisfaction and SmartVote (only displayed under certain
-// conditions)
-UserVoice.push(['autoprompt', {}]);
